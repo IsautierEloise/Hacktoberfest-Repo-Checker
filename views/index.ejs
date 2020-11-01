@@ -108,7 +108,7 @@
     <br>
     <br>
     <br>
-    <form method="POST" action="/check">
+    <form method="POST" action="/check" id="form-repo" >
       <div class="d-flex justify-content-center">
         <div class="input-group input-group-lg repo-input">
           <input type="text" name="repo" class="form-control" placeholder="https://github.com/digitalocean/hacktoberfest/" aria-label="Repository Url"
@@ -116,10 +116,12 @@
           <div class="input-group-append">
             <input type="submit" class="btn btn-success" value="CHECK"></input>
           </div>
+          <div class="search-modal">
+            <div class="search-modal-items"></div>
+          </div>
         </div>
       </div>
     </form>
-
     <div class="hack-switch">
       <p>Dark Mode</p>
       <label class="switch">
@@ -231,6 +233,18 @@
 </body>
 <script>
   $('#exampleModal').modal('toggle')
+  $('#form-repo').on('submit', function (event) {
+    let searchedItem = $('input[name ="repo"]').val();
+    let searchModal = document.querySelector('.search-modal');
+    if(!document.querySelector('.search-modal-title')){
+      let searchHistory = document.createElement('h5');
+      searchHistory.classList.add('search-modal-title')
+      searchHistory.textContent = 'Last searched repositories:'  
+      searchModal.insertBefore(searchHistory, searchModal.firstChild);
+    }    
+
+    storeSearch(searchedItem); 
+  });
 </script>
 <script>
   function getTheme(){
@@ -244,6 +258,25 @@
   function toogleMode(){
     localStorage.setItem('mode', (localStorage.getItem('mode') || 'light') === 'light' ? 'dark' : 'light');
     localStorage.getItem('mode') === 'dark' ? document.querySelector('body').classList.add('dark') : document.querySelector('body').classList.remove('dark');
+  }
+  
+  function storeSearch(searchParam) {
+    const maxHistoryLength = 4;
+    const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    const isHistoryMaxed = history.length === maxHistoryLength;
+    const workingHistory = isHistoryMaxed ? history.slice(1) : history;
+    const updatedHistory = workingHistory.concat(searchParam);
+
+    localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+    updateUI();
+  }
+
+  function updateUI(){
+    const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    console.log()
+      $('.search-modal-items').empty().append(history.map(v => `
+        <span class="search-modal-item">${v}</span>
+    `).join(''));
   }
 </script>
 </html>
